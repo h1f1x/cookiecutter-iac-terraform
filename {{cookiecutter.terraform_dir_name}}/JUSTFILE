@@ -1,0 +1,113 @@
+#!/usr/bin/env just --justfile
+
+## ----------------------------------------------------------------------------
+## This is a justfile (like make) [https://github.com/casey/just]
+## Managing terraform deployment with environment agnostic docker based runtime
+##
+## Highlights:
+## - can run different terraform version with just a change of DOCKER_IMAGE
+## - using best practices
+## -- always using remote state by default
+##
+## ----------------------------------------------------------------------------
+
+AWS_ACCOUNT_ID := `aws sts get-caller-identity --query 'Account' --output text || echo '[Error] No valid AWS account session/credentials found. Pleas login first.' || exit 2`
+# gets the current active region
+AWS_REGION := `aws ec2 describe-availability-zones --output text --query 'AvailabilityZones[0].[RegionName]'`
+
+TF_STATE_BUCKET := 'terraform-states-' + AWS_ACCOUNT_ID + '-' + AWS_REGION
+TF_STACK_NAME := '{{cookiecutter.project_slug}}'
+
+## ----------------------------------------------------------------------------
+## DOCKER runtime related
+## ----------------------------------------------------------------------------
+
+DOCKER_IMAGE := 'hashicorp/terraform:light'
+
+DOCKER_MOUNTS := justfile_directory() + '/..:' +  justfile_directory() + '/..'
+DOCKER_WORKDIR := justfile_directory()
+
+DOCKER_ENV_ARGS := '-e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN -e AWS_ACCOUNT_ID -e AWS_DEFAULT_REGION=' + AWS_REGION + ' -e AWS_PROFILE -e AWS_DEFAULT_PROFILE'
+DOCKER_ARGS := DOCKER_ENV_ARGS + ' -v ' + DOCKER_MOUNTS + ' -w ' + DOCKER_WORKDIR + ' -t  ' + DOCKER_IMAGE
+
+
+_default:
+	@just --list
+
+## ----------------------------------------------------------------------------
+## HELPERS
+## ----------------------------------------------------------------------------
+{% raw %}
+_status text:
+	#!/usr/bin/env bash
+	echo -e "\e[34m\e[1m[*] {{text}}"
+
+## ----------------------------------------------------------------------------
+## TARGETS - standard
+## ----------------------------------------------------------------------------
+# prints important variables
+info:
+	@echo '------------- info -----------------------------------------------------------------'
+	@echo "[>] remote state: s3://{{TF_STATE_BUCKET}}/{{TF_STACK_NAME}}.json"
+	@echo "[>] Terraform version: `docker run -i {{DOCKER_ARGS}} '-version'`"
+	@just --evaluate
+	@echo '-------------------------------------------------------------------------------------'
+
+# terraform init w/ remote state
+init:
+	@just _status "Initializing terraform with remote state: 's3://{{TF_STATE_BUCKET}}/{{TF_STACK_NAME}}.json' ..."
+	@docker run -i -e AWS_DEFAULT_REGION={{AWS_REGION}} {{DOCKER_ARGS}} init -backend-config="bucket={{TF_STATE_BUCKET}}" -backend-config="key={{TF_STACK_NAME}}.json"
+
+alias build := plan
+alias autolint := fmt
+alias lint := validate
+alias deploy := apply
+alias undeploy := destroy
+
+# not implemented yet
+test:
+	@echo "[] Test not implemented."
+
+clean:
+	@rm -fr .terraform
+	@rm -f .terraform.lock.hcl
+
+
+## ----------------------------------------------------------------------------
+## TARGETS - terraform
+## ----------------------------------------------------------------------------
+
+## terraform init w/ local state
+local:
+	@just _status 'Initializing terraform with local state ...'
+	@docker run -i -e AWS_DEFAULT_REGION={{AWS_REGION}} {{DOCKER_ARGS}} init
+
+# executes terraform apply w/ auto-approve
+apply:
+	@docker run -i {{DOCKER_ARGS}} apply -auto-approve
+
+# executes terraform destroy w/ force
+destroy:
+	@docker run -i {{DOCKER_ARGS}} destroy -force
+
+# executes terraform plan
+plan:
+	@docker run -i {{DOCKER_ARGS}} plan
+
+# updates tf configurations in the current directory for easy readability and consistency
+fmt:
+	@docker run -i {{DOCKER_ARGS}} fmt
+
+# check and report errors within tf modules, attribute names, and value types
+validate:
+	@docker run -i {{DOCKER_ARGS}} validate
+
+# executes terraform show
+show:
+	@docker run -i {{DOCKER_ARGS}} show
+
+# executes terraform state w/ given subcommand
+state *subcommand:
+	@docker run -i {{DOCKER_ARGS}} state {{subcommand}}
+
+{% endraw %}

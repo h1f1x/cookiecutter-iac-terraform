@@ -1,0 +1,21 @@
+function env_backup_and_set() {
+    set +o nounset
+    if [ "${STAGE+defined}" != "defined" ]; then 
+        export STAGE_backup=${STAGE}
+    fi
+    export STAGE=dev
+    set -o nounset
+}
+
+function env_restore() {
+    set +o nounset
+    if [[ "$STAGE_backup" != "" ]]; then 
+        export STAGE=${STAGE_backup}
+        unset STAGE_backup
+    fi
+    set -o nounset
+}
+
+function hr() {
+    echo "[------------------------------------------------------------------------------]"
+}
