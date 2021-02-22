@@ -5,6 +5,7 @@
 What you need before: 
 - [just](https://github.com/casey/just)
 - [docker](https://docker.io)
+- aws-cli
 - s3 bucket for terraform remote state (see below for help)
 
 Use the `just` command.
