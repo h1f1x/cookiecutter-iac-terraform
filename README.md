@@ -10,6 +10,70 @@ Benefits of using this template for your terraform IaC:
 - dockerized setup to be independent of execution environment and installed terraform version
 - this template is testable ;)
 
+Example usage within my project where I wanted to add terraform to:
+
+```
+my_poject ➜ cookiecutter git@github.com:h1f1x/cookiecutter-iac-terraform.git                                                
+terraform_dir_name [terraform]: 
+project_name [Terraform Demo Project]: 
+project_slug [terraform_demo_project]: 
+
+my_poject ➜ tree terraform 
+terraform
+├── JUSTFILE
+├── Makefile
+├── README.md
+├── backend.tf
+├── main.tf
+└── provider.tf
+
+0 directories, 6 files
+```
+
+Now go to `terraform/` and check what you can do.
+Don't forget to fetch aws credentials first, as you will need AWS access from now on.
+
+```
+my_poject ➜ cd terraform
+my_poject/terraform ➜ just
+Available recipes:
+    apply             # executes terraform apply w/ auto-approve
+    deploy            # alias for `apply`
+    clean
+    destroy           # executes terraform destroy w/ force
+    undeploy          # alias for `destroy`
+    fmt               # updates tf configurations in the current directory for easy readability and consistency
+    autolint          # alias for `fmt`
+    info              # prints important variables
+    init              # terraform init w/ remote state
+    local             # # terraform init w/ local state
+    plan              # executes terraform plan
+    build             # alias for `plan`
+    show              # executes terraform show
+    state *subcommand # executes terraform state w/ given subcommand
+    test              # not implemented yet
+    validate          # check and report errors within tf modules, attribute names, and value types
+    lint              # alias for `validate`
+```
+
+You can now initialize the terraform like:
+```
+my_poject/terraform ➜ just init
+[*] Initializing terraform with remote state: 's3://terraform-states-1234567890-eu-central-1/terraform_demo_project.json' ...
+
+Initializing the backend...
+[...]
+```
+And deploy:
+```
+my_poject/terraform ➜ just deploy
+aws_iam_role.test-role: Creating...
+aws_iam_role.test-role: Creation complete after 2s [id=terraform_demo_project-role]
+
+Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
+
+```
+
 ## Usage
 
 This describes the installation of this template to your project.
