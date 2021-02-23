@@ -76,11 +76,30 @@ Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
 
 ## Usage
 
-This describes the installation of this template to your project.
+This describes the installation of this template to your project in detail.
 
 What you need before: 
 - [just](https://github.com/casey/just)
 - [cookiecutter](https://cookiecutter.readthedocs.io/en/latest/index.html#)
+
+As most things are shown above, here only some additional things you might want to know. 
+See also the README.md of the cookicutter output. Everything which relates to the terraform you can find there.
+
+### Variables
+
+As you call cookiecutter you will be asked for some input. Here they are:
+
+### terraform_dir_name 
+Which directory you want to put in your terraform files in. Name it according to your conventions for iaC. 
+If you don't know leave it to the default.
+
+### project_name 
+Could be the name of you current project you want to add this terraform to.
+It's only used to fill some project related texts from the template. 
+So it will be used for tagging of your resources. 
+
+### project_slug
+This is a sanitized version of your project_name. Used for thing which cannot have spaces in text.
 
 
 ## Develop
