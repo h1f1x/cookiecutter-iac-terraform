@@ -1,4 +1,4 @@
-# IaC on AWS with terraform
+# IaC for {{cookiecutter.project_name}}
 
 ## Usage
 
