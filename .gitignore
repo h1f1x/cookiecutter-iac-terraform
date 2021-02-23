@@ -1,2 +1,19 @@
+
+# terraform specific ignores
+
+**/.terraform
+.terraform
+*.tfstate
+*.tfstate.*
+*.plan
+*.tfplan
+override.tf
+*.tfvars
+
+# this depends on your strategy
+.terraform.lock.hcl
+
+# project specific
+
 .cookiecutter_replay
 build/
