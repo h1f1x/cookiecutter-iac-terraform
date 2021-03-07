@@ -1,5 +1,15 @@
+locals {
+  name_suffix = "${var.project_name}-${var.environment}"
+  required_tags = {
+    Project     = var.project_name,
+    Environment = var.environment,
+    Owner       = var.owner
+  }
+  tags = merge(var.resource_tags, local.required_tags)
+}
+
 resource "aws_iam_role" "example-role" {
-  name = "{{cookiecutter.project_slug}}-role"
+  name = "role-${local.name_suffix}"
 
   # Terraform's "jsonencode" function converts a
   # Terraform expression result to valid JSON syntax.
@@ -10,22 +20,22 @@ resource "aws_iam_role" "example-role" {
         Action = "sts:AssumeRole"
         Effect = "Allow"
         Sid    = ""
-        Principal = {
+        Principal = {s
           Service = "ec2.amazonaws.com"
         }
       },
     ]
   })
-  tags = var.resource_tags
+  tags = local.tags
 }
 
 resource "aws_dynamodb_table" "example-dynamodb-table" {
-  name = "{{cookiecutter.project_slug}}"
+  name         = local.name_suffix
   billing_mode = "PAY_PER_REQUEST"
-  hash_key         = "ExampleTableHashKey"
+  hash_key     = "ExampleTableHashKey"
   attribute {
     name = "ExampleTableHashKey"
     type = "S"
   }
-  tags = var.resource_tags
+  tags = local.tags
 }

@@ -25,7 +25,11 @@ env_backup_and_set
 echo $STAGE
 
 export TF_IN_AUTOMATION=1
-export TF_VAR_resource_tags="{ Project = \"${PROJECT_SLUG}\", Owner = \"${USER}\", Environment = \"${STAGE}\" }"
+export TF_LOG=TRACE
+export TF_LOG_PATH=./terraform.log
+export TF_VAR_project_name="${PROJECT_SLUG}"
+export TF_VAR_owner="${USER}"
+export TF_VAR_environment="${STAGE}"
 
 cd ${DST_BASE_DIR}/${terraform_dir_name}
 just info
