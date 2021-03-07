@@ -4,7 +4,11 @@
 
 What you need before: 
 - [just](https://github.com/casey/just)
+{%- if cookiecutter.use_docker == "y" %}
 - [docker](https://docker.io)
+{%- else %}
+- [terraform](https://www.terraform.io/downloads.html)
+{%- endif %}
 - aws-cli
 - s3 bucket for terraform remote state (see below for help)
 
