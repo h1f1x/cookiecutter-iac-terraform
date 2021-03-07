@@ -19,6 +19,10 @@ test: clean
 unittest: clean
 	@just tests/unit
 
+# Run integrationtest only
+integrationtest: clean
+	@just tests/integration
+
 # runs cookiecutter from you local version
 run:
 	@(cookiecutter --config-file default-config.yaml --output-dir {{TARGET_BASE_DIR}} .) || echo '[+] Hint: if 'directory already exists': re-run with: make clean build'
