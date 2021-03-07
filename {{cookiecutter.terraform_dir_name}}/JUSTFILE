@@ -52,10 +52,13 @@ info:
 	@echo "[>] remote state: s3://{{ "{{" }}TF_STATE_BUCKET{{ "}}" }}/{{ "{{" }}TF_STACK_NAME{{ "}}" }}.json"
 {%- if cookiecutter.use_docker == "y" %}
 	@echo "[>] Terraform version: `docker run -i {{ "{{" }}DOCKER_ARGS{{ "}}" }} '-version'`"
-{% else %}
-	export | grep TF_VAR_
 {%- endif %}
 	@just --evaluate
+{%- if cookiecutter.use_docker == "n" %}
+	@echo '[>] all exported: TF_* '
+	@echo `export | grep TF_`
+	@echo '[<]'
+{%- endif %}
 	@echo '-------------------------------------------------------------------------------------'
 
 # terraform init w/ remote state
