@@ -8,6 +8,8 @@ locals {
   tags = merge(var.resource_tags, local.required_tags)
 }
 
+# ---------------------------------------------------------------------------------------------------------------------
+
 resource "aws_iam_role" "example-role" {
   name = "role-${local.name_suffix}"
 
@@ -29,6 +31,8 @@ resource "aws_iam_role" "example-role" {
   tags = local.tags
 }
 
+# ---------------------------------------------------------------------------------------------------------------------
+
 resource "aws_dynamodb_table" "example-dynamodb-table" {
   name         = local.name_suffix
   billing_mode = "PAY_PER_REQUEST"
@@ -38,4 +42,22 @@ resource "aws_dynamodb_table" "example-dynamodb-table" {
     type = "S"
   }
   tags = local.tags
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
+
+resource "random_pet" "petname" {
+  length    = 3
+  separator = "-"
+}
+
+data "aws_caller_identity" "current" {}
+data "aws_region" "current" {}
+
+output "account_id" {
+  value = data.aws_caller_identity.current.account_id
+}
+
+resource "aws_s3_bucket" "example" {
+  bucket = "${random_pet.petname.id}-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.name}"
 }
