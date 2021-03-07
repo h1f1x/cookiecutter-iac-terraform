@@ -11,9 +11,13 @@ _default:
 init:
 	@echo 'Please check the README for other required software!'
 
-# Run tests
+# Run all tests
 test: clean
 	@just tests/all
+
+# Run unittests only
+unittest: clean
+	@just tests/unit
 
 # runs cookiecutter from you local version
 run:

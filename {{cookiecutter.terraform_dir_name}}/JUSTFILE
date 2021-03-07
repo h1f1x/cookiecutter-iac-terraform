@@ -14,10 +14,12 @@
 AWS_ACCOUNT_ID := `aws sts get-caller-identity --query 'Account' --output text || echo '[Error] No valid AWS account session/credentials found. Pleas login first.' || exit 2`
 # gets the current active region
 AWS_REGION := `aws ec2 describe-availability-zones --output text --query 'AvailabilityZones[0].[RegionName]'`
+export AWS_DEFAULT_REGION := AWS_REGION
 
 TF_STATE_BUCKET := 'terraform-states-' + AWS_ACCOUNT_ID + '-' + AWS_REGION
 TF_STACK_NAME := '{{cookiecutter.project_slug}}'
 
+{%- if cookiecutter.use_docker == "y" %}
 ## ----------------------------------------------------------------------------
 ## DOCKER runtime related
 ## ----------------------------------------------------------------------------
@@ -27,9 +29,9 @@ DOCKER_IMAGE := 'hashicorp/terraform:light'
 DOCKER_MOUNTS := justfile_directory() + '/..:' +  justfile_directory() + '/..'
 DOCKER_WORKDIR := justfile_directory()
 
-DOCKER_ENV_ARGS := '-e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN -e AWS_ACCOUNT_ID -e AWS_DEFAULT_REGION=' + AWS_REGION + ' -e AWS_PROFILE -e AWS_DEFAULT_PROFILE'
+DOCKER_ENV_ARGS := '-e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN -e AWS_ACCOUNT_ID -e AWS_DEFAULT_REGION=' + AWS_DEFAULT_REGION + ' -e AWS_PROFILE -e AWS_DEFAULT_PROFILE'
 DOCKER_ARGS := DOCKER_ENV_ARGS + ' -v ' + DOCKER_MOUNTS + ' -w ' + DOCKER_WORKDIR + ' -t  ' + DOCKER_IMAGE
-
+{%- endif %}
 
 _default:
 	@just --list
@@ -37,10 +39,9 @@ _default:
 ## ----------------------------------------------------------------------------
 ## HELPERS
 ## ----------------------------------------------------------------------------
-{% raw %}
 _status text:
 	#!/usr/bin/env bash
-	echo -e "\e[34m\e[1m[*] {{text}}"
+	echo -e "\e[34m\e[1m[*] {{ "{{" }}text{{ "}}" }}"
 
 ## ----------------------------------------------------------------------------
 ## TARGETS - standard
@@ -48,15 +49,22 @@ _status text:
 # prints important variables
 info:
 	@echo '------------- info -----------------------------------------------------------------'
-	@echo "[>] remote state: s3://{{TF_STATE_BUCKET}}/{{TF_STACK_NAME}}.json"
-	@echo "[>] Terraform version: `docker run -i {{DOCKER_ARGS}} '-version'`"
+	@echo "[>] remote state: s3://{{ "{{" }}TF_STATE_BUCKET{{ "}}" }}/{{ "{{" }}TF_STACK_NAME{{ "}}" }}.json"
+{%- if cookiecutter.use_docker == "y" %}
+	@echo "[>] Terraform version: `docker run -i {{ "{{" }}DOCKER_ARGS{{ "}}" }} '-version'`"
+{%- endif %}
 	@just --evaluate
 	@echo '-------------------------------------------------------------------------------------'
 
 # terraform init w/ remote state
 init:
-	@just _status "Initializing terraform with remote state: 's3://{{TF_STATE_BUCKET}}/{{TF_STACK_NAME}}.json' ..."
-	@docker run -i -e AWS_DEFAULT_REGION={{AWS_REGION}} {{DOCKER_ARGS}} init -backend-config="bucket={{TF_STATE_BUCKET}}" -backend-config="key={{TF_STACK_NAME}}.json"
+	@just _status "Initializing terraform with remote state: 's3://{{ "{{" }}TF_STATE_BUCKET{{ "}}" }}/{{ "{{" }}TF_STACK_NAME{{ "}}" }}.json' ..."
+{%- if cookiecutter.use_docker == "y" %}
+	@docker run -i {{ "{{" }}DOCKER_ARGS{{ "}}" }}  \
+{%- else %}
+	terraform \
+{%- endif %}
+	init -backend-config="bucket={{ "{{" }}TF_STATE_BUCKET{{ "}}" }}" -backend-config="key={{ "{{" }}TF_STACK_NAME{{ "}}" }}.json"
 
 alias build := plan
 alias autolint := fmt
@@ -80,34 +88,64 @@ clean:
 ## terraform init w/ local state
 local:
 	@just _status 'Initializing terraform with local state ...'
-	@docker run -i -e AWS_DEFAULT_REGION={{AWS_REGION}} {{DOCKER_ARGS}} init
+{%- if cookiecutter.use_docker == "y" %}
+	@docker run -i {{ "{{" }}DOCKER_ARGS{{ "}}" }} init
+{%- else %}
+	terraform init
+{%- endif %}
 
 # executes terraform apply w/ auto-approve
 apply:
-	@docker run -i {{DOCKER_ARGS}} apply -auto-approve
+{%- if cookiecutter.use_docker == "y" %}
+	@docker run -i {{ "{{" }}DOCKER_ARGS{{ "}}" }} apply -auto-approve
+{%- else %}
+	terraform apply -auto-approve
+{%- endif %}
 
 # executes terraform destroy w/ force
 destroy:
-	@docker run -i {{DOCKER_ARGS}} destroy -force
+{%- if cookiecutter.use_docker == "y" %}
+	@docker run -i {{ "{{" }}DOCKER_ARGS{{ "}}" }} destroy -force
+{%- else %}
+	terraform destroy -force
+{%- endif %}
 
 # executes terraform plan
 plan:
-	@docker run -i {{DOCKER_ARGS}} plan
+{%- if cookiecutter.use_docker == "y" %}
+	@docker run -i {{ "{{" }}DOCKER_ARGS{{ "}}" }} plan
+{%- else %}
+	terraform plan
+{%- endif %}
 
 # updates tf configurations in the current directory for easy readability and consistency
 fmt:
-	@docker run -i {{DOCKER_ARGS}} fmt
+{%- if cookiecutter.use_docker == "y" %}
+	@docker run -i {{ "{{" }}DOCKER_ARGS{{ "}}" }} fmt
+{%- else %}
+	terraform fmt
+{%- endif %}
 
 # check and report errors within tf modules, attribute names, and value types
 validate:
-	@docker run -i {{DOCKER_ARGS}} validate
+{%- if cookiecutter.use_docker == "y" %}
+	@docker run -i {{ "{{" }}DOCKER_ARGS{{ "}}" }} validate
+{%- else %}
+	terraform validate
+{%- endif %}
 
 # executes terraform show
 show:
-	@docker run -i {{DOCKER_ARGS}} show
+{%- if cookiecutter.use_docker == "y" %}
+	@docker run -i {{ "{{" }}DOCKER_ARGS{{ "}}" }} show
+{%- else %}
+	terraform show
+{%- endif %}
 
 # executes terraform state w/ given subcommand
 state *subcommand:
-	@docker run -i {{DOCKER_ARGS}} state {{subcommand}}
-
-{% endraw %}
+{%- if cookiecutter.use_docker == "y" %}
+	@docker run -i {{ "{{" }}DOCKER_ARGS{{ "}}" }} state {{ "{{" }}subcommand{{ "}}" }}
+{%- else %}
+	terraform state {{ "{{" }}subcommand{{ "}}" }}
+{%- endif %}

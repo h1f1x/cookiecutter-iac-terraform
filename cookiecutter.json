@@ -2,6 +2,7 @@
     "terraform_dir_name": "terraform",
     "project_name": "Terraform Demo Project",
     "project_slug": "{{ cookiecutter.project_name.lower().replace(' ', '_').replace('-', '_') }}",
+    "use_docker": "y",
     "_copy_without_render": [
         "*/JUSTFILE.DONOTTOUCH"
     ]

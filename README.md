@@ -16,7 +16,8 @@ Example usage within my project where I wanted to add terraform to:
 my_poject ➜ cookiecutter git@github.com:h1f1x/cookiecutter-iac-terraform.git                                                
 terraform_dir_name [terraform]: 
 project_name [Terraform Demo Project]: 
-project_slug [terraform_demo_project]: 
+project_slug [terraform_demo_project]:
+use_docker [y]:
 
 my_poject ➜ tree terraform 
 terraform
@@ -101,6 +102,8 @@ So it will be used for tagging of your resources.
 ### project_slug
 This is a sanitized version of your project_name. Used for thing which cannot have spaces in text.
 
+### use_docker
+Should the terraform be dockerized?
 
 ## Develop
 

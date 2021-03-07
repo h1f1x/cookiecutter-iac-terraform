@@ -19,3 +19,28 @@ function env_restore() {
 function hr() {
     echo "[------------------------------------------------------------------------------]"
 }
+
+function execute_std_targets() {
+  pushd . > /dev/null
+  env_backup_and_set
+  echo $STAGE
+  cd ${DST_DIR}/${terraform_dir_name}
+  hr; echo "[${PROJECT_SLUG}] Testing just default taget ..."; hr
+  just .
+  hr; echo "[${PROJECT_SLUG}] Testing just target: init ..."; hr
+  just init
+  hr; echo "[${PROJECT_SLUG}] Testing just target: info ..."; hr
+  just info
+  hr; echo "[${PROJECT_SLUG}] Testing just target: build ..."; hr
+  just build
+  hr; echo "[${PROJECT_SLUG}] Testing just target: autolint ..."; hr
+  just autolint
+  hr; echo "[${PROJECT_SLUG}] Testing just target: lint ..."; hr
+  just lint
+  hr; echo "[${PROJECT_SLUG}] Testing just target: test ..."; hr
+  just test
+  hr; echo "[${PROJECT_SLUG}] Testing just target: clean ..."; hr
+  just clean
+  popd > /dev/null
+  env_restore
+}
