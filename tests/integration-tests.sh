@@ -4,7 +4,7 @@ set -e
 set -u
 
 DST_BASE_DIR=../build/tests/integration
-PROJECT_SLUG='cookiecutter_iac_terraform_test'
+PROJECT_SLUG='cookiecutter_iac_terraform_inttest'
 terraform_dir_name='terraform'
 
 source common.source
@@ -41,6 +41,8 @@ hr; echo "[${PROJECT_SLUG}] Testing just target: show ..."; hr
 just show
 hr; echo "[${PROJECT_SLUG}] Testing just target: state list ..."; hr
 just state list
+hr; echo "[${PROJECT_SLUG}] Testing just target: output ..."; hr
+just output
 hr; echo "[${PROJECT_SLUG}] Testing just target: destroy ..."; hr
 just destroy
 popd > /dev/null

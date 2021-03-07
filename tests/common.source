@@ -25,7 +25,7 @@ function execute_std_targets() {
   env_backup_and_set
   echo $STAGE
   cd ${DST_DIR}/${terraform_dir_name}
-  hr; echo "[${PROJECT_SLUG}] Testing just default taget ..."; hr
+  hr; echo "[${PROJECT_SLUG}] Testing just default target ..."; hr
   just .
   hr; echo "[${PROJECT_SLUG}] Testing just target: init ..."; hr
   just init

@@ -154,3 +154,11 @@ state *subcommand:
 {%- else %}
 	terraform state {{ "{{" }}subcommand{{ "}}" }}
 {%- endif %}
+
+# executes terraform output
+output *args:
+{%- if cookiecutter.use_docker == "y" %}
+	@docker run -i {{ "{{" }}DOCKER_ARGS{{ "}}" }} output {{ "{{" }}args{{ "}}" }}
+{%- else %}
+	terraform output {{ "{{" }}args{{ "}}" }}
+{%- endif %}
