@@ -39,6 +39,10 @@ _default:
 ## ----------------------------------------------------------------------------
 ## HELPERS
 ## ----------------------------------------------------------------------------
+
+# Displays given text in color.
+# https://misc.flogisoft.com/bash/tip_colors_and_formatting
+
 _status text:
 	#!/usr/bin/env bash
 	echo -e "\e[34m\e[1m[*] {{ "{{" }}text{{ "}}" }}"
